@@ -33,6 +33,7 @@ import java.util.Map;
 public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
     private static final String USER_ID_PLACEHOLDER = "**uid**";
     private static final String USER_NAME_PLACEHOLDER = "**uname**";
+    private static final String USER_EMAIL_PLACEHOLDER = "**email**";
     private static final Logger LOGGER = Logger.getLogger(ExternalClaimMapper.class);
     private static final String REMOTE_URL_PROPERTY = "remoteUrl";
     private static final String JSON_PATH_EXPRESSION_PROPERTY = "jsonPath";
@@ -50,7 +51,7 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
                 .name(REMOTE_URL_PROPERTY)
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .label("Remote url")
-                .helpText(String.format("Remote url to get claim for the given user, use %s and %s lowercase as placeholders", USER_ID_PLACEHOLDER, USER_NAME_PLACEHOLDER))
+                .helpText(String.format("Remote url to get claim for the given user, use %s, %s and %s lowercase as placeholders", USER_ID_PLACEHOLDER, USER_NAME_PLACEHOLDER, USER_EMAIL_PLACEHOLDER))
                 .add();
 
         propertiesBuilder
@@ -84,7 +85,7 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
                 .name(REQUEST_HEADERS_PROPERTY)
                 .type(ProviderConfigProperty.MAP_TYPE)
                 .label("Request headers")
-                .helpText(String.format("Configure headers attached to claim data request, use %s and %s lowercase as placeholders", USER_ID_PLACEHOLDER, USER_NAME_PLACEHOLDER))
+                .helpText(String.format("Configure headers attached to claim data request, use %s, %s and %s lowercase as placeholders", USER_ID_PLACEHOLDER, USER_NAME_PLACEHOLDER, USER_EMAIL_PLACEHOLDER))
                 .add();
 
         PROPERTIES_CONFIG = propertiesBuilder.build();
@@ -140,12 +141,13 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
     protected void setClaim(IDToken token, ProtocolMapperModel model, UserSessionModel user, KeycloakSession session, ClientSessionContext clientSessionCtx) {
         var uid = user.getUser().getId();
         var uname = user.getUser().getUsername();
-        var url = makeUrl(model, uid, uname);
+        var email = user.getUser().getEmail();
+        var url = makeUrl(model, uid, uname, email);
         if (url == null) {
             return;
         }
 
-        var claimData = getClaimData(model, token, url, uid, uname, session);
+        var claimData = getClaimData(model, token, url, uid, uname, email, session);
         if (IsEmpty(claimData)) {
             return;
         }
@@ -164,7 +166,7 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
         }
     }
 
-    private String makeUrl(ProtocolMapperModel mappingModel, String uid, String uname) {
+    private String makeUrl(ProtocolMapperModel mappingModel, String uid, String uname, String email) {
         var remoteUrl = mappingModel.getConfig().get(REMOTE_URL_PROPERTY);
         if (IsEmpty(remoteUrl)) {
             LOGGER.warn("Remote url is required");
@@ -172,7 +174,7 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
         }
 
         try {
-            var remoteUrlWithPlaceholders = remoteUrl.replace(USER_ID_PLACEHOLDER, uid).replace(USER_NAME_PLACEHOLDER, uname);
+            var remoteUrlWithPlaceholders = remoteUrl.replace(USER_ID_PLACEHOLDER, uid).replace(USER_NAME_PLACEHOLDER, uname).replace(USER_EMAIL_PLACEHOLDER, email);
             return new URL(remoteUrlWithPlaceholders).toString();
         } catch (MalformedURLException e) {
             LOGGER.errorv(e, "Could not create request url");
@@ -206,7 +208,7 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
         return request.auth(encodedIdToken);
     }
 
-    private SimpleHttp setHeaders(ProtocolMapperModel model, SimpleHttp request, String uid, String uname) {
+    private SimpleHttp setHeaders(ProtocolMapperModel model, SimpleHttp request, String uid, String uname, String email) {
         var mapperModel = new IdentityProviderMapperModel();
         mapperModel.setConfig(model.getConfig());
         var headers = mapperModel.getConfigMap(REQUEST_HEADERS_PROPERTY);
@@ -216,18 +218,18 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
 
         for (var header : headers.entrySet()) {
             var value = String.join(", ", header.getValue());
-            var valueWithPlaceholders = value.replace(USER_ID_PLACEHOLDER, uid).replace(USER_NAME_PLACEHOLDER, uname);
+            var valueWithPlaceholders = value.replace(USER_ID_PLACEHOLDER, uid).replace(USER_NAME_PLACEHOLDER, uname).replace(USER_EMAIL_PLACEHOLDER, email);
             request.header(header.getKey(), valueWithPlaceholders);
         }
 
         return request;
     }
 
-    private String getClaimData(ProtocolMapperModel model, IDToken token, String url, String uid, String uname, KeycloakSession session) {
+    private String getClaimData(ProtocolMapperModel model, IDToken token, String url, String uid, String uname, String email, KeycloakSession session) {
         try {
             LOGGER.infov("Getting claim data for user={0} from url={1}", uid, url);
             var request = SimpleHttp.doGet(url, session);
-            var response = setHeaders(model, setAuth(model, request, session, token), uid, uname).asResponse();
+            var response = setHeaders(model, setAuth(model, request, session, token), uid, uname, email).asResponse();
             var status = response.getStatus();
             var success = status >= 200 && status < 400;
             if (!success) {
