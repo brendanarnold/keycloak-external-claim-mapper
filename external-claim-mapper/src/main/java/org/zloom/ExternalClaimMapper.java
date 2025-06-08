@@ -28,6 +28,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @AutoService(ProtocolMapper.class)
 public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
@@ -173,8 +175,10 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
             return null;
         }
 
+        var encodedEmail = IsEmpty(email) ? "" : URLEncoder.encode(email, StandardCharsets.UTF_8);
+
         try {
-            var remoteUrlWithPlaceholders = remoteUrl.replace(USER_ID_PLACEHOLDER, uid).replace(USER_NAME_PLACEHOLDER, uname).replace(USER_EMAIL_PLACEHOLDER, email);
+            var remoteUrlWithPlaceholders = remoteUrl.replace(USER_ID_PLACEHOLDER, uid).replace(USER_NAME_PLACEHOLDER, uname).replace(USER_EMAIL_PLACEHOLDER, encodedEmail);
             return new URL(remoteUrlWithPlaceholders).toString();
         } catch (MalformedURLException e) {
             LOGGER.errorv(e, "Could not create request url");
