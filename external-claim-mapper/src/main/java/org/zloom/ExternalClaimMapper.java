@@ -215,7 +215,12 @@ public class ExternalClaimMapper extends AbstractOIDCProtocolMapper implements O
     private SimpleHttp setHeaders(ProtocolMapperModel model, SimpleHttp request, String uid, String uname, String email) {
         var mapperModel = new IdentityProviderMapperModel();
         mapperModel.setConfig(model.getConfig());
-        var headers = mapperModel.getConfigMap(REQUEST_HEADERS_PROPERTY);
+        Map<String, List<String>> headers = null;
+        try {
+            headers = mapperModel.getConfigMap(REQUEST_HEADERS_PROPERTY);
+        } catch (RuntimeException e) {
+            LOGGER.infov("No headers configured, skipping");
+        }
         if (headers == null) {
             return request;
         }
