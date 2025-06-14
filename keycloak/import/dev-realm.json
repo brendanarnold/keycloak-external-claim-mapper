@@ -389,6 +389,8 @@
       "consentRequired" : false,
       "config" : {
         "introspection.token.claim" : "true",
+        "requestHeaders" : "[ ]",
+        "userAuth" : "false",
         "userinfo.token.claim" : "true",
         "jsonPath" : "$.roles.values",
         "remoteUrl" : "http://mockserver:8081/userprofile",
