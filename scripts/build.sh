@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ..
-VERSION=0.0.2 
+VERSION=0.0.3 
 mvn versions:set -DnewVersion=$VERSION
 mvn versions:commit
 mvn dependency:copy -Dartifact=com.jayway.jsonpath:json-path:2.8.0 -DoutputDirectory=build
