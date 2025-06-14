@@ -99,3 +99,4 @@ Run the following to generate the JWT token loaded with the mocked claims
 curl -X POST http://localhost:8080/realms/dev/protocol/openid-connect/token -H 'Content-Type: application/x-www-form-urlencoded' -d grant_type=password -d client_id=account -d username=test -d password=test
 ```
 
+The resulting `access_token` can then be inspected at [jwt.io](https://https://jwt.io/)
