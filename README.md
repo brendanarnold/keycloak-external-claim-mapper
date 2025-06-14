@@ -78,25 +78,52 @@ A switch to propagate errors that may occurs during data fetch and transformatio
 When this options is enabled, extension will add user session JWT token, of course this token will not contain remote claims yet. Token will be added with following header `"Authorization" : "Bearer eyJ..."`
 ### Request headers
 Set of key value pairs which you can use to configure custom request headers, when multiple values provided with same key header value will be joined with comma as following `"X-key": "value1, value2"`. You can use `**uid**` and `**uname**` placeholders same like in remote url.
-## License
-This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Development
 
-Use Docker Compose to build and run changes in a local test environment
+Use **Docker Compose** to build and run changes in a local test environment:
 
-```docker compose build```
-
-```docker compose up```
-
-This launches a Keycloak server loaded up with the module installed, a Postgresql database and a mocked server which serves user roles.
-
-Login to Keycloak with `admin` as the username and password and select the `dev` realm. A test user (username: `test`, password: `test`) is preconfigured and the custom mapper is loaded into the `account` client. Visit `Client Scopes -> account-dedicated -> external_claims` to change the settings.
-
-Run the following to generate the JWT token loaded with the mocked claims
-
-```
-curl -X POST http://localhost:8080/realms/dev/protocol/openid-connect/token -H 'Content-Type: application/x-www-form-urlencoded' -d grant_type=password -d client_id=account -d username=test -d password=test
+```bash
+docker compose up
 ```
 
-The resulting `access_token` can then be inspected at [jwt.io](https://https://jwt.io/)
+This launches:
+- A Keycloak server with the module installed
+- A PostgreSQL database for Keycloak
+- A MockServer that serves user roles
+
+**Login to Keycloak:**
+- Username: `admin`
+- Password: `admin`
+- Select the `dev` realm
+
+A test user is preconfigured:
+- Username: `test`
+- Password: `test`
+
+The custom mapper is loaded into the `account` client.  
+To change its settings, go to:  
+**Client Scopes → `account-dedicated` → `external_claims`.**
+
+**Generate a token:**
+
+```bash
+./scripts/get_token.sh
+```
+
+This script generates a JWT token with mocked claims.
+You can inspect the resulting `access_token` at [jwt.io](https://jwt.io/).
+Local setup includes the MockServer dashboard at:  
+[http://localhost:8081/mockserver/dashboard](http://localhost:8081/mockserver/dashboard)
+
+You can check received requests there.
+
+![Dashboard](./images/2025-06-14_13-51.png)
+
+## Contributors
+
+- [Anton Zalialdinov](https://zloom.org)
+- [Brendan Arnold](http://brendan.sdf-eu.org)
+
+## License
+This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
