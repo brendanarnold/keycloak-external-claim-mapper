@@ -31,8 +31,8 @@ Login and password are `admin`. Check `http://localhost:8080/admin/master/consol
 ## Configuration
 There are 5 fields to configure, except standard protocol mapper provider configuration.
 ### Remote url
-This is remote url to fetch json from, you can optionally use a placeholders to insert keycloak user id and user name. 
-- Placeholders will work as following: assume your remote urls is `http://localhost/user` so that `http://localhost/user/**uid**/**uname**` will be transformed to `http://localhost/user/063943d2-d7ed-4bca-812b-506518c38228/test` given that `063943d2-d7ed-4bca-812b-506518c38228` is keycloak user id and `test` is user name.
+This is remote url to fetch json from, you can optionally use a placeholders to insert keycloak user id, user name and email. 
+- Placeholders will work as following: assume your remote urls is `http://localhost/user` so that `http://localhost/user/**uid**/**uname**/**email**` will be transformed to `http://localhost/user/063943d2-d7ed-4bca-812b-506518c38228/test/test%40example.com` given that `063943d2-d7ed-4bca-812b-506518c38228` is keycloak user id, `test` is user name and `test@example.com` is the email.
 ### Json path
 Optional json path expression to transform your remote endpoint response data.
 Given that **Token Claim Name** is configured as `user_roles` and remote endpoint response is:
@@ -81,3 +81,22 @@ Set of key value pairs which you can use to configure custom request headers, wh
 ## License
 This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
+## Development
+
+Use Docker Compose to build and run changes in a local test environment
+
+```docker compose build```
+
+```docker compose up```
+
+This launches a Keycloak server loaded up with the module installed, a Postgresql database and a mocked server which serves user roles.
+
+Login to Keycloak with `admin` as the username and password and select the `dev` realm. A test user (username: `test`, password: `test`) is preconfigured and the custom mapper is loaded into the `account` client. Visit `Client Scopes -> account-dedicated -> external_claims` to change the settings.
+
+Run the following to generate the JWT token loaded with the mocked claims
+
+```
+curl -X POST http://localhost:8080/realms/dev/protocol/openid-connect/token -H 'Content-Type: application/x-www-form-urlencoded' -d grant_type=password -d client_id=account -d username=test -d password=test
+```
+
+The resulting `access_token` can then be inspected at [jwt.io](https://https://jwt.io/)

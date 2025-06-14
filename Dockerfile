@@ -1,4 +1,4 @@
-FROM alpine:3.20 as build
+FROM docker.io/alpine:3.20 as build
 
 RUN apk --update --no-cache add openjdk21 maven
 
