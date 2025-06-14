@@ -32,7 +32,7 @@ Login and password are `admin`. Check `http://localhost:8080/admin/master/consol
 There are 5 fields to configure, except standard protocol mapper provider configuration.
 ### Remote url
 This is remote url to fetch json from, you can optionally use a placeholders to insert keycloak user id, user name and email. 
-- Placeholders will work as following: assume your remote urls is `http://localhost/user` so that `http://localhost/user/**uid**/**uname**/**email**` will be transformed to `http://localhost/user/063943d2-d7ed-4bca-812b-506518c38228/test/test@example.com` given that `063943d2-d7ed-4bca-812b-506518c38228` is keycloak user id, `test` is user name and `test@example.com` is the email.
+- Placeholders will work as following: assume your remote urls is `http://localhost/user` so that `http://localhost/user/**uid**/**uname**/**email**` will be transformed to `http://localhost/user/063943d2-d7ed-4bca-812b-506518c38228/test/test%40example.com` given that `063943d2-d7ed-4bca-812b-506518c38228` is keycloak user id, `test` is user name and `test@example.com` is the email.
 ### Json path
 Optional json path expression to transform your remote endpoint response data.
 Given that **Token Claim Name** is configured as `user_roles` and remote endpoint response is:
