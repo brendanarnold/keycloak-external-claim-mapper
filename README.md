@@ -81,3 +81,21 @@ Set of key value pairs which you can use to configure custom request headers, wh
 ## License
 This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
+## Development
+
+Use Docker Compose to build and run changes in a local test environment
+
+```docker compose build```
+
+```docker compose up```
+
+This launches a Keycloak server loaded up with the module installed, a Postgresql database and a mocked server which serves user roles.
+
+Login to Keycloak with `admin` as the username and password and select the `dev` realm. A test user (username: `test`, password: `test`) is preconfigured and the custom mapper is loaded into the `account` client. Visit `Client Scopes -> account-dedicated -> external_claims` to change the settings.
+
+Run the following to generate the JWT token loaded with the mocked claims
+
+```
+curl -X POST http://localhost:8080/realms/dev/protocol/openid-connect/token -H 'Content-Type: application/x-www-form-urlencoded' -d grant_type=password -d client_id=account -d username=test -d password=test
+```
+
