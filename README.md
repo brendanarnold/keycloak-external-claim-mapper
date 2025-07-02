@@ -5,20 +5,20 @@ Implementation of the keycloak internal SPI protocol-mapper, that allows to fetc
 ## Limitations
 Built and tested with Keycloak 25.0.0, maven 3.6.3, openjdk21, you can build and test with other versions if required.
 ## Installation
-To build Keycloak 25.0.0 image with extension from 0.0.2 release create dockerfile with following content:
+
+To build Keycloak 25.0.0 image with extension from 0.0.3 release - build the JAR by doing the following
+
 ```
-FROM alpine:3.20 as build
+cd scripts
+sh build.sh
+```
 
-ARG VERSION=0.0.2
+Then create dockerfile with following content:
 
-RUN \
-  wget https://github.com/zloom/keycloak-external-claim-mapper/releases/download/${VERSION}/external.claim.mapper-${VERSION}.tar.gz;\
-  mkdir -p /providers;\
-  tar -C /providers -zxvf external.claim.mapper-${VERSION}.tar.gz;
+```
+FROM quay.io/keycloak/keycloak:25.0.0
 
-FROM quay.io/keycloak/keycloak:25.0.0 as keycloak
-
-COPY --from=build /providers /opt/keycloak/providers
+COPY build /opt/keycloak/providers
 
 ENV KEYCLOAK_ADMIN="admin"
 ENV KEYCLOAK_ADMIN_PASSWORD="admin"
